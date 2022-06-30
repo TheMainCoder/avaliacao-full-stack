@@ -36,6 +36,4 @@ public class AgendamentoTransferencia {
     private Date dataAgendamento;
     
     private Date dataTransferencia;
-
-    private String tipoTransacao;
 }
