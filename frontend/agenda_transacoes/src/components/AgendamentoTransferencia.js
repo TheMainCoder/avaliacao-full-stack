@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Container, FormHelperText, Grid, TextField, Typography } from "@material-ui/core";
+import { Button, Card, CardContent, Container, FormHelperText, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@material-ui/core";
 import CurrencyTextField from "@unicef/material-ui-currency-textfield/dist/CurrencyTextField";
 import { useCallback, useEffect, useState } from "react";
 import ReactInputMask from "react-input-mask";
@@ -12,6 +12,7 @@ export default function AgendamentoTransferencia() {
     const [isSubmit, setIsSubmit] = useState(false);
     const [registered, setRegistered] = useState(false);
     const [errors, setErrors] = useState([]);
+    const [agendamentos, setAgendamentos] = useState([]);
 
     const getFormValues = useCallback(() => {
         return { contaOrigem, contaDestino, valor, dataTransferencia };
@@ -19,9 +20,27 @@ export default function AgendamentoTransferencia() {
         contaOrigem, contaDestino, valor, dataTransferencia
     ]);
 
+    const loadAgendamentos = useCallback(() => {
+        const fetchAgendamentos = async () => {
+            const response = await fetch('http://localhost:8080/agendamento/list');
+            const data = await response.json();
+            setAgendamentos(data);
+        }
+
+        fetchAgendamentos().catch(error => {
+            console.log(error);
+        });
+    }, []);
+
+    // Carrega os agendamentos pela primeira vez
+    useEffect(() => {
+        loadAgendamentos();
+    }, [loadAgendamentos]);
+
     const handleClick = (e) => {
         e.preventDefault();
         setRegistered(false);
+        setErrors([]);
         setFormErrors(validateForm(getFormValues()));
         setIsSubmit(true);
     }
@@ -63,21 +82,19 @@ export default function AgendamentoTransferencia() {
                 setDataTransferencia("");
                 setRegistered(true);
                 setErrors([]);
+
+                // Recarrega os agendamentos
+                loadAgendamentos();
             } else if (response.status === 400) {
                 setErrors(await response.json());
             }
-
-            // const data = await response.json();
-
-            // console.log("data " + JSON.stringify(data));
         }
+
         if (Object.keys(formErrors).length === 0 && isSubmit) {
-            console.log("Let's submit: " + JSON.stringify(getFormValues()));
             fetchData().catch(error => console.log(error));
             setIsSubmit(false);
-            // alert("Transferencia agendada com sucesso!");
         }
-    }, [formErrors, isSubmit, getFormValues]);
+    }, [formErrors, isSubmit, getFormValues, loadAgendamentos]);
 
     const styles = {
         card: {
@@ -85,6 +102,21 @@ export default function AgendamentoTransferencia() {
             padding: "20px"
         }
     }
+
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [day, month, year].join('/');
+    }
+
     return (
         <Container>
             <Card style={styles.card}>
@@ -162,10 +194,30 @@ export default function AgendamentoTransferencia() {
             <Card style={{ marginTop: "20px" }}>
                 <CardContent>
                     <Typography variant="h6" gutterBottom>Agendamentos</Typography>
-                    <p>{contaOrigem}</p>
-                    <p>{contaDestino}</p>
-                    <p>{dataTransferencia}</p>
-                    <p>{valor}</p>
+                    <TableContainer component={Paper}>
+                        <Table aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="center">Conta de origem</TableCell>
+                                    <TableCell align="right">Conta de destino</TableCell>
+                                    <TableCell align="right">Data da transferência</TableCell>
+                                    <TableCell align="right">Valor</TableCell>
+                                    <TableCell align="right">Taxa</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {agendamentos.map((row) => (
+                                    <TableRow key={row.name}>
+                                        <TableCell align="right">{row.contaOrigem}</TableCell>
+                                        <TableCell align="right">{row.contaDestino}</TableCell>
+                                        <TableCell align="right">{formatDate(row.dataTransferencia)}</TableCell>
+                                        <TableCell align="right">{row.valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
+                                        <TableCell align="right">{row.taxa.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </CardContent>
             </Card>
         </Container>
