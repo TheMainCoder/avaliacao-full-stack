@@ -1,24 +1,20 @@
-import logo from './logo.svg';
+import { useEffect } from 'react';
 import './App.css';
+import AgendamentoTransferencia from './components/AgendamentoTransferencia';
+
 
 function App() {
+  useEffect(() => {
+    // 👇️ set style on body element
+    document.body.style.backgroundColor = '#dadada';
+
+    return () => {
+      // 👇️ optionally remove styles when component unmounts
+      document.body.style.backgroundColor = null;
+    };
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AgendamentoTransferencia />
   );
 }
 
