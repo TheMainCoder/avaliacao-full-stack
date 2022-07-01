@@ -118,7 +118,7 @@ public class AgendamentoRestController {
             throw new MethodArgumentNotValidException(null, bindingResult);
         }
 
-        return "Atualizado com sucesso";
+        return "Success";
     }
 
     @DeleteMapping("{id}")
@@ -126,7 +126,7 @@ public class AgendamentoRestController {
         Optional<AgendamentoTransferencia> agendamento = agendamentoService.findById(id);
         if (agendamento.isPresent()) {
             agendamentoService.delete(agendamento.get());
-            return "Excluído com sucesso";
+            return "Success";
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado", new Exception());
     }

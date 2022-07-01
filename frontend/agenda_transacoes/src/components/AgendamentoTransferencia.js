@@ -11,13 +11,13 @@ export default function AgendamentoTransferencia() {
     const [formErrors, setFormErrors] = useState({});
     const [isSubmit, setIsSubmit] = useState(false);
     const [registered, setRegistered] = useState(false);
+    const [errors, setErrors] = useState([]);
 
     const getFormValues = useCallback(() => {
         return { contaOrigem, contaDestino, valor, dataTransferencia };
     }, [
         contaOrigem, contaDestino, valor, dataTransferencia
     ]);
-
 
     const handleClick = (e) => {
         e.preventDefault();
@@ -62,6 +62,9 @@ export default function AgendamentoTransferencia() {
                 setValor("");
                 setDataTransferencia("");
                 setRegistered(true);
+                setErrors([]);
+            } else if (response.status === 400) {
+                setErrors(await response.json());
             }
 
             // const data = await response.json();
@@ -87,7 +90,7 @@ export default function AgendamentoTransferencia() {
             <Card style={styles.card}>
                 <Typography variant="h6" gutterBottom>Agendamento de Transferência</Typography>
                 <CardContent>
-                    {registered ? <div style={{color:"green", backgroundColor: '#edf7ed', marginBottom: "20px", padding:"20px"}}>Registro realizado com sucesso!</div> : ''}
+                    {registered ? <div style={{ color: "green", backgroundColor: '#edf7ed', marginBottom: "20px", padding: "20px" }}>Registro realizado com sucesso!</div> : ''}
                     <Grid container spacing={1}>
                         <Grid xs={12} sm={6} md={3} item>
                             <ReactInputMask
@@ -145,6 +148,13 @@ export default function AgendamentoTransferencia() {
                             <Button variant="contained" color="primary" onClick={handleClick}>Agendar</Button>
                         </Grid>
                     </Grid>
+                    {
+                        errors.length > 0 ?
+                            <Grid item style={{ color: "#611a15", backgroundColor: "#fdecea", marginTop: "20px", padding: "20px" }}>
+                                <Typography variant="subtitle2">Erros</Typography>
+                                {errors.map((error, index) => <FormHelperText error key={index}>* {error}</FormHelperText>)}
+                            </Grid> : ''
+                    }
                 </CardContent>
 
             </Card>
