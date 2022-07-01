@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, Container, FormHelperText, Grid, TextField, Typography } from "@material-ui/core";
 import CurrencyTextField from "@unicef/material-ui-currency-textfield/dist/CurrencyTextField";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactInputMask from "react-input-mask";
 
 export default function AgendamentoTransferencia() {
@@ -10,15 +10,19 @@ export default function AgendamentoTransferencia() {
     const [dataTransferencia, setDataTransferencia] = useState("");
     const [formErrors, setFormErrors] = useState({});
     const [isSubmit, setIsSubmit] = useState(false);
+    const [registered, setRegistered] = useState(false);
 
-    const getFormValues = () => {
+    const getFormValues = useCallback(() => {
         return { contaOrigem, contaDestino, valor, dataTransferencia };
-    }
+    }, [
+        contaOrigem, contaDestino, valor, dataTransferencia
+    ]);
+
 
     const handleClick = (e) => {
         e.preventDefault();
+        setRegistered(false);
         setFormErrors(validateForm(getFormValues()));
-        console.log("formErrors " + JSON.stringify(formErrors));
         setIsSubmit(true);
     }
 
@@ -40,12 +44,37 @@ export default function AgendamentoTransferencia() {
     }
 
     useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('http://localhost:8080/agendamento/add', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify(getFormValues())
+            })
+
+            if (response.status === 200 && await response.text() === "Success") {
+                // Limpa os campos
+                setContaOrigem("");
+                setContaDestino("");
+                setValor("");
+                setDataTransferencia("");
+                setRegistered(true);
+            }
+
+            // const data = await response.json();
+
+            // console.log("data " + JSON.stringify(data));
+        }
         if (Object.keys(formErrors).length === 0 && isSubmit) {
             console.log("Let's submit: " + JSON.stringify(getFormValues()));
+            fetchData().catch(error => console.log(error));
             setIsSubmit(false);
             // alert("Transferencia agendada com sucesso!");
         }
-    }, [formErrors]);
+    }, [formErrors, isSubmit, getFormValues]);
 
     const styles = {
         card: {
@@ -57,8 +86,8 @@ export default function AgendamentoTransferencia() {
         <Container>
             <Card style={styles.card}>
                 <Typography variant="h6" gutterBottom>Agendamento de Transferência</Typography>
-
                 <CardContent>
+                    {registered ? <div style={{color:"green", backgroundColor: '#edf7ed', marginBottom: "20px", padding:"20px"}}>Registro realizado com sucesso!</div> : ''}
                     <Grid container spacing={1}>
                         <Grid xs={12} sm={6} md={3} item>
                             <ReactInputMask

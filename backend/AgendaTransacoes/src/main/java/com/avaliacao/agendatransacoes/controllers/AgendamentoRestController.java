@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ import com.avaliacao.agendatransacoes.services.AgendamentoTransferenciaService;
 
 @RestController
 @RequestMapping("/agendamento")
+@CrossOrigin
 public class AgendamentoRestController {
     @Autowired
     private AgendamentoTransferenciaService agendamentoService;
@@ -65,7 +67,7 @@ public class AgendamentoRestController {
             throw new MethodArgumentNotValidException(null, bindingResult);
         }
 
-        return "Adicionado com sucesso";
+        return "Success";
     }
 
     @GetMapping("/list")
