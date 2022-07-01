@@ -1,62 +1,40 @@
 # Entregáveis
- Pequena documentação no README explicando suas decisões arquiteturais, versões de linguagem,
+ Pequena documentação do README explicando decisões arquiteturais, versões de linguagem,
 ferramentas utilizadas e instruções para a subida do projeto.
 
- É obrigatório a criação de um projeto no seu Github para que vejamos os passos feitos
-através dos commits.
+## Ferramentas
 
-# Avaliação
+IDE (front e back): `Visual Studio Code`
 
-Desenvolver tanto a API quanto o front-end (Spring boot e Vue no front, caso não tenha conhecimentos de vue, aceitamos o front com angular)
+Browser: `Google Chrome`
 
-O objetivo dessa tarefa é avaliar como você vai desenvolver o código em termos de estilo,
-eficiência, qualidade e prazo de entrega.
+## Back-end
+### Tecnologia e versões
+* Spring Boot 2.7.1
+* Java 11
+### Design Patterns
+* Padrão de projeto `Factory` para criação de instâncias do calculador de taxas
+* Padrão de projeto `Strategy` para seleção do algoritmo de cálculo da taxa
 
-A tarefa é a seguinte:
+## Front-end
+### Tecnologia e versões
+* Node 16.15.1
+* React 18.2.0
 
-Desenvolver um sistema de agendamento de transferências financeiras.
-
-1) O usuário deve poder agendar uma transferência financeira com as seguintes
- informações:
- Conta de origem (padrão XXXXXX)
- Conta de destino (padrão XXXXXX)
- Valor da transferência
- Taxa (a ser calculada)
- Data da transferência (data que será realizada a transferência)
- Data de agendamento (hoje)
- 
-2) Cada tipo de transação segue uma regra diferente para cálculo da taxa
-
- A: Tranferências no mesmo dia do agendamento tem uma taxa de $3 mais 3% do valor a
-ser transferido;
-
-B: Tranferências até 10 dias da data de agendamento possuem uma taxa de $12.
-
-C: Operações do tipo C tem uma taxa regressiva conforme a data de
-transferência:
-
- acima de 10 dias da data de agendamento 8.2%
- 
- acima de 20 dias da data de agendamento 6.9%
- 
- acima de 30 dias da data de agendamento 4.7%
- 
- acima de 40 dias da data de agendamento 1.7%
- 
- D: Operações do tipo D tem a taxa igual a A, B ou C dependendo do valor da
-transferência.
-
- Valores até $1.000 seguem a taxação tipo A
- 
- Valores de $1.001 até $2.000 seguem a taxação tipo B
- 
- Valores maiores que $2.000 seguem a taxação tipo C
- 
-Obs: Caso não haja taxa aplicável, lançar um alerta sobre o erro.
-
-3) O usuário deve poder ver todos os agendamentos cadastrados.
-
-Nota: A persistência deve ser feita em banco de dados em memória (h2, por exemplo).
-Boa sorte!
-
-
+## Subida do projeto
+### Subida do servidor
+O projeto utiliza um servidor Tomcat embarcado, que deve ser executado em ambiente Windows através do arquivo bat mvnw.bat, executando o seguinte comando no diretório raiz do projeto (`backend/AgendaTransacoes`):
+```
+mvnw spring-boot:run
+```
+A aplicação será inicia em `http://localhost:8080`.
+### Subida da aplicação cliente
+Com o servidor rodando, agora é hora de executar a aplicação cliente... Na raiz do projeto(`frontend/agenda_transacoes`) execute o comando a seguir para realizar o download das dependências:
+```
+npm install --legacy-peer-deps
+```
+Uma vez que as dependências foram baixadas a aplicação pode ser iniciada com o seguinte comando:
+```
+npm start
+```
+A aplicação será servida em `http://localhost:3000` e já pode ser acessada através de um navegador [link](http://localhost:3000).
