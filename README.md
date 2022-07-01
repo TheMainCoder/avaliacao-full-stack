@@ -1,4 +1,4 @@
-# Entregáveis
+# Sistema de Agendamento de Transferências
  Pequena documentação do README explicando decisões arquiteturais, versões de linguagem,
 ferramentas utilizadas e instruções para a subida do projeto.
 
