@@ -13,6 +13,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.avaliacao.agendatransacoes.dto.AgendamentoTransferenciaDTO;
 import com.avaliacao.agendatransacoes.entities.AgendamentoTransferencia;
@@ -42,7 +42,7 @@ public class AgendamentoRestController {
     private AgendamentoTransferenciaService agendamentoService;
 
     @PostMapping("/add")
-    public String addAgendamento(
+    public ResponseEntity<String> addAgendamento(
             @Valid @RequestBody AgendamentoTransferenciaDTO agendamentoDTO, BindingResult bindingResult)
             throws MethodArgumentNotValidException {
         if (bindingResult.hasErrors()) {
@@ -67,7 +67,7 @@ public class AgendamentoRestController {
             throw new MethodArgumentNotValidException(null, bindingResult);
         }
 
-        return "Success";
+        return ResponseEntity.ok("Success");
     }
 
     @GetMapping("/list")
@@ -76,31 +76,34 @@ public class AgendamentoRestController {
     }
 
     @GetMapping("{id}")
-    public AgendamentoTransferencia getAgendamento(@PathVariable("id") Long id, BindingResult bindingResult) throws MethodArgumentNotValidException {
+    public ResponseEntity<AgendamentoTransferencia> getAgendamento(@PathVariable("id") Long id,
+            BindingResult bindingResult) throws MethodArgumentNotValidException {
         Optional<AgendamentoTransferencia> agendamento = agendamentoService.findById(id);
         if (agendamento.isPresent()) {
-            return agendamento.get();
+            return ResponseEntity.ok(agendamento.get());
         }
 
-        bindingResult.addError(new ObjectError("operation", "Agendamento não encontrado"));
-        throw new MethodArgumentNotValidException(null, bindingResult);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("{id}")
-    public String updateAgendamento(@PathVariable("id") Long id, @Valid @RequestBody AgendamentoTransferenciaDTO agendamentoDTO, BindingResult bindingResult) throws MethodArgumentNotValidException {
+    public ResponseEntity<String> updateAgendamento(@PathVariable("id") Long id,
+            @Valid @RequestBody AgendamentoTransferenciaDTO agendamentoDTO, BindingResult bindingResult)
+            throws MethodArgumentNotValidException {
         if (bindingResult.hasErrors()) {
             throw new MethodArgumentNotValidException(null, bindingResult);
         }
-        
+
         Optional<AgendamentoTransferencia> opAgendamento = agendamentoService.findById(id);
-        if(opAgendamento.isPresent()) {
+        if (opAgendamento.isPresent()) {
             try {
                 AgendamentoTransferencia agendamento = opAgendamento.get();
                 agendamento.setContaOrigem(agendamentoDTO.getContaOrigem());
                 agendamento.setContaDestino(agendamentoDTO.getContaDestino());
                 agendamento.setValor(agendamentoDTO.getValor());
-                agendamento.setDataTransferencia(new SimpleDateFormat("yyyy-MM-dd").parse(agendamentoDTO.getDataTransferencia()));
-            
+                agendamento.setDataTransferencia(
+                        new SimpleDateFormat("yyyy-MM-dd").parse(agendamentoDTO.getDataTransferencia()));
+
                 BigDecimal taxa = TaxaCalculatorFactory.getTaxaCalculator(agendamento)
                         .calculate(agendamento);
                 if (Objects.nonNull(taxa)) {
@@ -109,28 +112,27 @@ public class AgendamentoRestController {
                     throw new Exception();
 
                 agendamentoService.save(agendamento);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 bindingResult.addError(new ObjectError("operation", "Erro ao atualizar o agendamento"));
                 throw new MethodArgumentNotValidException(null, bindingResult);
             }
         } else {
-            bindingResult.addError(new ObjectError("operation", "Agendamento não encontrado"));
-            throw new MethodArgumentNotValidException(null, bindingResult);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return "Success";
+        return ResponseEntity.ok("Success");
     }
 
     @DeleteMapping("{id}")
-    public String deleteAgendamento(@PathVariable("id") Long id, HttpServletResponse response) {
+    public ResponseEntity<String> deleteAgendamento(@PathVariable("id") Long id, HttpServletResponse response) {
         Optional<AgendamentoTransferencia> agendamento = agendamentoService.findById(id);
         if (agendamento.isPresent()) {
             agendamentoService.delete(agendamento.get());
-            return "Success";
+            return ResponseEntity.ok("Success");
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado", new Exception());
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public List<String> handleValidationExceptions(
