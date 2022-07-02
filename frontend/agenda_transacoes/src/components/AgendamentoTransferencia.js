@@ -39,10 +39,12 @@ export default function AgendamentoTransferencia() {
 
     const handleClick = (e) => {
         e.preventDefault();
-        setRegistered(false);
-        setErrors([]);
-        setFormErrors(validateForm(getFormValues()));
-        setIsSubmit(true);
+        if(!isSubmit) {
+            setRegistered(false);
+            setErrors([]);
+            setFormErrors(validateForm(getFormValues()));
+            setIsSubmit(true);
+        }
     }
 
     const validateForm = (values) => {
@@ -63,7 +65,7 @@ export default function AgendamentoTransferencia() {
     }
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchSubmit = async () => {
             const response = await fetch('http://localhost:8080/agendamento/add', {
                 method: 'POST',
                 headers: {
@@ -72,6 +74,9 @@ export default function AgendamentoTransferencia() {
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify(getFormValues())
+            }).catch(error => {
+                setIsSubmit(false);
+                setErrors(["Erro ao realizar requisição, verifique sua conexão com a internet e tente novamente mais tarde."]);
             })
 
             if (response.status === 200 && await response.text() === "Success") {
@@ -87,12 +92,14 @@ export default function AgendamentoTransferencia() {
                 loadAgendamentos();
             } else if (response.status === 400) {
                 setErrors(await response.json());
+            } else {
+                console.log(response.status);
             }
+            setIsSubmit(false);
         }
 
         if (Object.keys(formErrors).length === 0 && isSubmit) {
-            fetchData().catch(error => console.log(error));
-            setIsSubmit(false);
+            fetchSubmit().catch(error => console.log(error));
         }
     }, [formErrors, isSubmit, getFormValues, loadAgendamentos]);
 
@@ -117,12 +124,15 @@ export default function AgendamentoTransferencia() {
         return [day, month, year].join('/');
     }
 
+    const divAlertRegisteredStyle = { color: "green", backgroundColor: '#edf7ed', marginBottom: "20px", padding: "20px", borderRadius: "10px" };
+    const divAlertErrorStyle = { color: "#611a15", backgroundColor: "#fdecea", marginTop: "20px", padding: "20px", borderRadius: "10px" };
+
     return (
         <Container>
             <Card style={styles.card}>
                 <Typography variant="h6" gutterBottom>Agendamento de Transferência</Typography>
                 <CardContent>
-                    {registered ? <div style={{ color: "green", backgroundColor: '#edf7ed', marginBottom: "20px", padding: "20px" }}>Registro realizado com sucesso!</div> : ''}
+                    {registered ? <div style={divAlertRegisteredStyle}>Registro realizado com sucesso!</div> : ''}
                     <Grid container spacing={1}>
                         <Grid xs={12} sm={6} md={3} item>
                             <ReactInputMask
@@ -182,7 +192,7 @@ export default function AgendamentoTransferencia() {
                     </Grid>
                     {
                         errors.length > 0 ?
-                            <Grid item style={{ color: "#611a15", backgroundColor: "#fdecea", marginTop: "20px", padding: "20px" }}>
+                            <Grid item style={divAlertErrorStyle}>
                                 <Typography variant="subtitle2">Erros</Typography>
                                 {errors.map((error, index) => <FormHelperText error key={index}>* {error}</FormHelperText>)}
                             </Grid> : ''
@@ -199,7 +209,8 @@ export default function AgendamentoTransferencia() {
                             <TableHead>
                                 <TableRow>
                                     <TableCell align="center">Conta de origem</TableCell>
-                                    <TableCell align="right">Conta de destino</TableCell>
+                                    <TableCell align="center">Conta de destino</TableCell>
+                                    <TableCell align="right">Data do Agendamento</TableCell>
                                     <TableCell align="right">Data da transferência</TableCell>
                                     <TableCell align="right">Valor</TableCell>
                                     <TableCell align="right">Taxa</TableCell>
@@ -208,8 +219,9 @@ export default function AgendamentoTransferencia() {
                             <TableBody>
                                 {agendamentos.map((row) => (
                                     <TableRow key={row.name}>
-                                        <TableCell align="right">{row.contaOrigem}</TableCell>
-                                        <TableCell align="right">{row.contaDestino}</TableCell>
+                                        <TableCell align="center">{row.contaOrigem}</TableCell>
+                                        <TableCell align="center">{row.contaDestino}</TableCell>
+                                        <TableCell align="right">{formatDate(row.dataAgendamento)}</TableCell>
                                         <TableCell align="right">{formatDate(row.dataTransferencia)}</TableCell>
                                         <TableCell align="right">{row.valor.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
                                         <TableCell align="right">{row.taxa.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
