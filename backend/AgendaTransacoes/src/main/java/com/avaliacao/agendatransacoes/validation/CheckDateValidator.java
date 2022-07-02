@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.Locale;
+import java.util.Objects;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -16,6 +17,10 @@ public class CheckDateValidator implements ConstraintValidator<CheckDateFormat, 
 
     @Override
     public boolean isValid(String dateStr, ConstraintValidatorContext constraintContext) {
+        if(Objects.isNull(dateStr)) {
+            return false;
+        }
+        
         try {
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.US)
                 .withResolverStyle(ResolverStyle.STRICT);

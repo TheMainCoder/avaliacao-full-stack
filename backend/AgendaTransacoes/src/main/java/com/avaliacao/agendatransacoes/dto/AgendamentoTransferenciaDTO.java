@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
+import javax.validation.GroupSequence;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import com.avaliacao.agendatransacoes.entities.AgendamentoTransferencia;
 import com.avaliacao.agendatransacoes.utils.DateUtils;
 import com.avaliacao.agendatransacoes.validation.CheckDateFormat;
+import com.avaliacao.agendatransacoes.validation.ExtendedValidation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,10 +27,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@GroupSequence({ AgendamentoTransferenciaDTO.class, ExtendedValidation.class })
 public class AgendamentoTransferenciaDTO {
+    @NotNull(message = "O campo 'Conta de Origem' é obrigatório")
     @Min(value = 1, message = "O campo 'Conta de Origem' é obrigatório")
     private Integer contaOrigem;
 
+    @NotNull(message = "O campo 'Conta de Destino' é obrigatório")
     @Min(value = 1, message = "O campo 'Conta de Destino' é obrigatório")
     private Integer contaDestino;
 
@@ -45,7 +50,7 @@ public class AgendamentoTransferenciaDTO {
         return !Objects.equals(contaOrigem, contaDestino);
     }
 
-    @AssertTrue(message = "A data de transferência deve ser igual ou posterior à data de agendamento")
+    @AssertTrue(groups = ExtendedValidation.class, message = "A data de transferência deve ser igual ou posterior à data de agendamento")
     private boolean isTodayOrFuture() {
         try {
             Date today = Calendar.getInstance().getTime();
